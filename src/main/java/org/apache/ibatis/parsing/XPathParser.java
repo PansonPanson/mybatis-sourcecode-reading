@@ -42,13 +42,53 @@ import org.xml.sax.SAXParseException;
 /**
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ *
+ * 基于 Java XPath 解析器，用于解析 MyBatis mybatis-config.xml 和 **Mapper.xml 等 XML 配置文件
+ *
  */
 public class XPathParser {
 
+  /**
+   * XML Document 对象
+   */
   private final Document document;
+
+  /**
+   * 是否校验 XML
+   */
   private boolean validation;
+
+  /**
+   * XML 实体解析器。默认情况下，对 XML 进行校验时，会基于 XML 文档开始位置指定的 DTD 文件或 XSD 文件。
+   * 例如说，解析 mybatis-config.xml 配置文件时，会加载 http://mybatis.org/dtd/mybatis-3-config.dtd 这个 DTD 文件。
+   * 但是，如果每个应用启动都从网络加载该 DTD 文件，势必在弱网络下体验非常下，甚至说应用部署在无网络的环境下，
+   * 还会导致下载不下来，那么就会出现 XML 校验失败的情况。所以，在实际场景下，MyBatis 自定义了 EntityResolver 的实现，
+   * 达到使用本地 DTD 文件，从而避免下载网络 DTD 文件的效果
+   */
   private EntityResolver entityResolver;
+
+  /**
+   * 即可以在常用的 Java Properties 文件中配置，也可以使用 MyBatis <property /> 标签中配置
+   *
+   * <dataSource type="POOLED">
+   *   <property name="driver" value="${driver}"/>
+   *   <property name="url" value="${url}"/>
+   *   <property name="username" value="${username}"/>
+   *   <property name="password" value="${password}"/>
+   * </dataSource>
+   *
+   * <properties resource="org/mybatis/example/config.properties">
+   *   <property name="username" value="dev_user"/>
+   *   <property name="password" value="F2Fa3!33TYyg"/>
+   * </properties>
+   *
+   *
+   */
   private Properties variables;
+
+  /**
+   * 用于查询 XML 中的节点和元素
+   */
   private XPath xpath;
 
   public XPathParser(String xml) {
